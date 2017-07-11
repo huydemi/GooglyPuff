@@ -42,15 +42,25 @@ class PhotoManager {
     return _sharedManager
   }
   
+  fileprivate let concurrentPhotoQueue =
+    DispatchQueue(label: "com.raywenderlich.GooglyPuff.photoQueue",
+                  attributes: .concurrent)
+  
   fileprivate var _photos: [Photo] = []
   var photos: [Photo] {
-    return _photos
+    var photosCopy: [Photo]!
+    concurrentPhotoQueue.sync {
+      photosCopy = self._photos
+    }
+    return photosCopy
   }
   
   func addPhoto(_ photo: Photo) {
-    _photos.append(photo)
-    DispatchQueue.main.async {
-      self.postContentAddedNotification()
+    concurrentPhotoQueue.async(flags: .barrier) {
+      self._photos.append(photo)
+      DispatchQueue.main.async {
+        self.postContentAddedNotification()
+      }
     }
   }
   
