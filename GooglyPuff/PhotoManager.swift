@@ -65,11 +65,17 @@ class PhotoManager {
   }
   
   func downloadPhotosWithCompletion(_ completion: BatchPhotoDownloadingCompletionClosure?) {
+    
     var storedError: NSError?
     let downloadGroup = DispatchGroup()
-    for address in [overlyAttachedGirlfriendURLString,
-                    successKidURLString,
-                    lotsOfFacesURLString] {
+    let addresses = [overlyAttachedGirlfriendURLString,
+                     successKidURLString,
+                     lotsOfFacesURLString]
+    let _ = DispatchQueue.global(qos: .userInitiated)
+    DispatchQueue.concurrentPerform(iterations: addresses.count) {
+      i in
+      let index = Int(i)
+      let address = addresses[index]
       let url = URL(string: address)
       downloadGroup.enter()
       let photo = DownloadPhoto(url: url!) {
